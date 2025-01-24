@@ -1,0 +1,49 @@
+stages:
+  prepare:
+    cmd: python prepare.py
+    deps:
+    - ../data/raw
+    - prepare.py
+    outs:
+    - ../data/prepared
+    - ../data/test
+  train_automl:
+    cmd: python train_automl.py
+    deps:
+    - ../data/prepared/train.csv
+    - train_automl.py
+    outs:
+    - ../models/automl_model
+    metrics:
+    - ../metrics/automl_leaderboard.csv
+  evaluate_automl:
+    cmd: python evaluate_automl.py
+    deps:
+    - ../data/test/test.csv
+    - evaluate_automl.py
+    - ../models/automl_model
+    metrics:
+    - ../metrics/automl_evaluation.json
+plots:
+- ../metrics/automl_leaderboard.csv:
+    x: model
+    y: score_val
+    title: "AutoML Model Performance"
+    template: bar
+    x_label: "Model Type"
+    y_label: "Validation Score"
+- ../metrics/feature_importance.csv:
+    x: importance
+    y: feature
+    title: "Feature Importance Analysis"
+    template: scatter
+    x_label: "Importance Score"
+    y_label: "Features"
+- ../metrics/automl_evaluation.json:
+    template: simple
+    title: "AutoML Model Evaluation Metrics"
+    y: ["rmse", "mae", "r2_score"]
+- ../metrics/evaluation_metrics.json:
+    template: simple
+    title: "Overall Model Evaluation"
+    y: ["root_mean_squared_error", "r2", "pearsonr"]

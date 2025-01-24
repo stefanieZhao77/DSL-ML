@@ -1,0 +1,70 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python prepare.py
+    deps:
+    - path: ../data/raw
+      hash: md5
+      md5: 2deccd02fc2f356c86f2c68d15642ddb.dir
+      size: 9204100
+      nfiles: 2
+    - path: prepare.py
+      hash: md5
+      md5: 880756e7084e64144d539cfb0557ffed
+      size: 7143
+      isexec: true
+    outs:
+    - path: ../data/prepared
+      hash: md5
+      md5: b6b00ed9c1559cc6d426c6350399c499.dir
+      size: 15438622
+      nfiles: 1
+    - path: ../data/test
+      hash: md5
+      md5: 562f4d72ff64f8bebd11c324d208fb11.dir
+      size: 3852373
+      nfiles: 1
+  train_automl:
+    cmd: python train_automl.py
+    deps:
+    - path: ../data/prepared/train.csv
+      hash: md5
+      md5: d6506f5e37eb1343d02e69b2baf817c2
+      size: 15438622
+    - path: train_automl.py
+      hash: md5
+      md5: c8ef5da2eeaaf1349b29d14bdaf59485
+      size: 1516
+      isexec: true
+    outs:
+    - path: ../metrics/automl_leaderboard.csv
+      hash: md5
+      md5: 40d0805d8be78e4c9ad0be1fc7e89b83
+      size: 1839
+    - path: ../models/automl_model
+      hash: md5
+      md5: d8b7323824b76e40034355d9200035e7.dir
+      size: 744440835
+      nfiles: 36
+  evaluate_automl:
+    cmd: python evaluate_automl.py
+    deps:
+    - path: ../data/test/test.csv
+      hash: md5
+      md5: 02897f2cd965a97af2d49d6db89c35f2
+      size: 3852373
+    - path: ../models/automl_model
+      hash: md5
+      md5: d8b7323824b76e40034355d9200035e7.dir
+      size: 744440835
+      nfiles: 36
+    - path: evaluate_automl.py
+      hash: md5
+      md5: 857b1f28dae6f354c1f106e54e0ea2ec
+      size: 4139
+      isexec: true
+    outs:
+    - path: ../metrics/automl_evaluation.json
+      hash: md5
+      md5: 84e7fe85fde7b0b4fe3d464fdb3b442a
+      size: 86

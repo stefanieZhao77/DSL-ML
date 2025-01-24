@@ -1,0 +1,66 @@
+data:
+  id_mapping:
+    mrt_data: patientalias
+    t25fw_data: MRN
+  random_state: 42
+  test_size: 0.2
+feature_engineering:
+- feature: mrt_data.t2lesvol
+  method: standardize
+  type: transform
+- feature: mrt_data.t2overbv
+  method: standardize
+  type: transform
+- feature: mrt_data.t2voljux
+  method: standardize
+  type: transform
+- feature: mrt_data.t2volprv
+  method: standardize
+  type: transform
+- feature: mrt_data.bpf
+  method: standardize
+  type: transform
+- feature: mrt_data.gmf
+  method: standardize
+  type: transform
+- feature: mrt_data.wmf
+  method: standardize
+  type: transform
+- expression: mrt_data.nt2lescn + mrt_data.nt2lesgt
+  new_feature: total_lesion_count
+  type: create
+- expression: mrt_data.t2lesvol / mrt_data.t2overbv
+  new_feature: lesion_volume_ratio
+  type: create
+features:
+  mrt_data:
+  - name: t2lesvol
+  - name: t2overbv
+  - name: t2voljux
+  - name: t2volprv
+  - name: nt2lescn
+  - name: nt2lesgt
+  - name: bpf
+  - name: gmf
+  - name: wmf
+file_mapping:
+  mrt_data: ../data/raw/MRT.csv
+  t25fw_data: ../data/raw/T25FW_summary.csv
+goal_features:
+  features:
+    dataset: t25fw_data
+    feature: Z-Score
+metrics:
+- rmse
+- mae
+- r2_score
+ml_models:
+- name: automl_walk
+  parameters: {}
+  type: AutoML
+start:
+  a: features
+models:
+  name: WalkingPrediction
+  task: clustering
+

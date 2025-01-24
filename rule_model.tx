@@ -1,0 +1,101 @@
+RuleModel:
+    elements+=Element+;
+
+Model: 'model' name=ID 'task' task=[Task] '{'
+    elements+=ModelElement*
+'}';
+
+Task:
+    'predict' | 'classification' | 'regression';
+
+ModelElement:
+    MLModel | Metric | FeatureSelection | FeatureEngineering | RuleSet | Start | Show;
+
+Start:
+    'start' mlModels=FQN 'with' feature=ID;
+
+Element:
+    Load | Model;
+
+Load:
+    'load' name=ID 'from' path=STRING ;
+
+MLModel:
+    'mlModel' name=ID 'type' modelType=[MLModelType] ('{' parameters+=Parameter* '}')? ;
+
+MLModelType:
+    'RandomForest' | 'DecisionTree' | 'SVM' | 'AutoML';
+
+Parameter:
+    'parameter' 'name' '=' name=STRING 'value' '=' value= ValueList;
+
+Value:
+    STRING | FLOAT;
+
+ValueList:
+    '['? values+=Value (',' values+=Value)* ','? ']'?;
+
+Metric:
+    'metric' name=MetricNameList;
+
+MetricNameList:
+     values+=MetricName (',' values+=MetricName)* ','? ;
+
+MetricName:
+    'rmse' | 'mae' | 'mse' | 'accuracy' | 'precision' | 'recall' | 'f1' | 'auc' | 'logloss' | 'error' | 'hamming_loss' | 'jaccard' | 'matthews_corrcoef' | 'zero_one_loss' | 'average_precision' | 'neg_log_loss' | 'neg_mean_absolute_error' | 'neg_mean_squared_error' | 'neg_mean_squared_log_error' | 'neg_median_absolute_error' | 'balanced_accuracy' | 'adjusted_mutual_info_score' | 'adjusted_rand_score' | 'completeness_score' | 'explained_variance' | 'fowlkes_mallows_score' | 'homogeneity_score' | 'mutual_info_score' | 'neg_brier_score' | 'neg_log_loss' | 'neg_mean_absolute_error' | 'neg_mean_squared_error' | 'neg_mean_squared_log_error' | 'neg_median_absolute_error' | 'normalized_mutual_info_score' | 'r2_score' | 'rand_score' | 'v_measure_score' | 'all' ;
+
+FQN: ID+[','];
+
+FeatureList:
+    features = FeatureMatch+[','] | (dataset=ID '['start=INT ':' end=INT ']')+[','] | all='all';
+
+FeatureMatch:
+    dataset=ID '.' feature=ID (operator=Operator value=FLOAT)?;
+
+RuleSet:
+    'ruleSet' name=ID '{' rules+=Rule+ '}';
+
+Rule:
+    'rule' ':' 'if' condition=Expression 'then' action=FQN;
+
+Expression : SimpleExpression | BinaryExpression;
+
+BinaryExpression:
+    '(' left=Expression logicOperator=LogicOperator right=Expression ')';
+
+SimpleExpression:
+    model=ID '.' metric=ID operator=Operator value=FLOAT;
+
+Operator: '<' | '>' | '<=' | '>=' | '==' | '!=';
+
+LogicOperator: 'and' | 'or';
+
+FeatureSelection: 'select' name=ID features=FeatureList ('goal' goal=FeatureMatch)? ('where' (dataset1=ID '.' feature1=ID operator=Operator dataset2=ID '.' feature2=ID)+['and'])? ('using' algorithm=ID)?;
+
+FeatureEngineering: 'engineer' name=ID '{' operations+=FeatureOperation+ '}';
+
+FeatureOperation:
+    CreateFeature | TransformFeature | EncodeFeature;
+
+CreateFeature:
+    'create' newFeature=ID 'as' expression=STRING;
+
+TransformFeature:
+    'transform' feature=FeatureMatch 'using' method=TransformMethod;
+
+TransformMethod:
+    'log' | 'sqrt' | 'square' | 'standardize' | 'normalize';
+
+EncodeFeature:
+    'encode' feature=FeatureMatch 'using' method=EncodeMethod;
+
+EncodeMethod:
+    'onehot' | 'label' | 'frequency';
+
+Show:
+    'show' method=[Visualization]+[','] ('from' mlModel=ID)?;
+
+Visualization:
+    'models' | 'features' | 'metrics';
+
+ID: /\b\w+(?:-\w+)*\b/;
